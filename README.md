@@ -6,4 +6,13 @@
 
 ---
 
+
+## Summary
+This project involves creating a portable device that uses an ESP32 microcontroller to function as a Sub-GHz Jammer capable of jamming frequencies 315 MHz, 434 MHz, 868 MHz and 915 MHz.
+
+
+## Disclaimer 
+This tool is strictly for educational purposes only. The author does not take responsibility for any illegal activity undertaken from the misuse of this software.
+
+
 ## Still In Development

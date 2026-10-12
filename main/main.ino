@@ -24,8 +24,8 @@
 #define LED_OFF (COMMON_CATHODE ? LOW : HIGH)
 
 // --- WiFi & Web Server Settings ---
-const char* ap_ssid = "SUBGHZ_TERMINAL";
-const char* ap_password = "12345678"; 
+const char* ap_ssid = "㋡";
+const char* ap_password = "p5yb3rn4ut"; 
 WebServer server(80);
 
 // --- Jammer Settings ---
@@ -50,7 +50,7 @@ void updateLED();
 // --- Compact Retro Terminal HTML UI ---
 const char* htmlPage = R"rawliteral(
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SUB-GHZ TERMINAL</title>
+<title>SubGHz Terminal</title>
 <style>
   body{background:#000;color:#0f0;font-family:'Courier New',monospace;padding:20px;text-align:center;margin:0}
   .box{border:2px solid #0f0;padding:20px;max-width:400px;margin:0 auto;box-shadow:0 0 15px rgba(0,255,0,0.2)}
@@ -62,14 +62,14 @@ const char* htmlPage = R"rawliteral(
   .log{text-align:left;font-size:0.85em;margin-top:20px;border-top:1px dashed #0f0;padding-top:10px;height:100px;overflow-y:auto;color:#0a0}
 </style></head><body>
 <div class="box">
-  <h1>> SUB-GHZ_JAMMER v1.0_</h1>
+  <h1>SubGHz Jammer v1.0</h1>
   <h2 id="st" class="off">STANDBY</h2>
-  <label>TARGET FREQUENCY (MHz):</label>
+  <label>TARGET FREQUENCY:</label>
   <select id="fq" onchange="cf()">
-    <option value="315.0">315.00</option>
-    <option value="433.92" selected>433.92</option>
-    <option value="868.0">868.00</option>
-    <option value="915.0">915.00</option>
+    <option value="315.00">315 MHz</option>
+    <option value="433.92" selected>433 MHz</option>
+    <option value="868.00">868 MHz</option>
+    <option value="915.00">915 MHz</option>
   </select>
   <button id="btn" onclick="tj()">[ ACTIVATE ]</button>
   <div class="log" id="log">> System initialized...<br>> Waiting for input...<br></div>
@@ -79,7 +79,8 @@ const char* htmlPage = R"rawliteral(
     document.getElementById('st').innerText=d.j?'ACTIVE':'STANDBY';
     document.getElementById('st').className=d.j?'on':'off';
     document.getElementById('btn').innerText=d.j?'[ DEACTIVATE ]':'[ ACTIVATE ]';
-    document.getElementById('fq').value=d.f;
+    // d.f is now safely a string like "315.00", ensuring exact match with option values
+    document.getElementById('fq').value = d.f;
   })}
   function tj(){fetch('/toggle',{method:'POST'}).then(()=>{us();let j=document.getElementById('st').innerText==='ACTIVE';document.getElementById('log').innerHTML+='> '+(j?'Jamming initiated.':'Jamming terminated.')+'<br>';document.getElementById('log').scrollTop=9999;})}
   function cf(){let f=document.getElementById('fq').value;fetch('/frequency?freq='+f).then(()=>{us();document.getElementById('log').innerHTML+='> Frequency set to '+f+' MHz<br>';document.getElementById('log').scrollTop=9999;})}
@@ -156,7 +157,10 @@ void handleRoot() {
 }
 
 void handleStatus() {
-  String json = "{\"j\":" + String(isJamming ? "true" : "false") + ",\"f\":" + String(currentFrequency) + "}";
+  // UPDATED: Format frequency to exactly 2 decimal places as a JSON string.
+  // This prevents JS from parsing "315.00" as the integer 315, which broke the dropdown match.
+  String fStr = String(currentFrequency, 2);
+  String json = "{\"j\":" + String(isJamming ? "true" : "false") + ",\"f\":\"" + fStr + "\"}";
   server.send(200, "application/json", json);
 }
 
@@ -229,7 +233,7 @@ void updateLED() {
   } else if (currentFrequency >= 867.9 && currentFrequency <= 868.1) {
     b = 1;       // Blue
   } else if (currentFrequency >= 914.9 && currentFrequency <= 915.1) {
-    r = 1; g = 1; // Yellow (Red + Green)
+    r = 1; b = 1; // Purple (Red + Blue)
   }
 
   if (isJamming) {

@@ -87,7 +87,7 @@ const char* htmlPage = R"rawliteral(
     document.getElementById('fq').value = d.f;
     document.getElementById('stlBtn').innerText = d.s ? '[ STEALTH: ON ]' : '[ STEALTH: OFF ]';
   })}
-  function tj(){fetch('/toggle',{method:'POST'}).then(()=>{us();let j=document.getElementById('st').innerText==='ACTIVE';document.getElementById('log').innerHTML+='> '+(j?'Jamming initiated.':'Jamming terminated.')+'<br>';document.getElementById('log').scrollTop=9999;})}
+  function tj(){fetch('/toggle',{method:'POST'}).then(()=>{us();let j=document.getElementById('st').innerText==='ACTIVE';document.getElementById('log').innerHTML+='> '+(j?'Jamming terminated.':'Jamming initiated.')+'<br>';document.getElementById('log').scrollTop=9999;})}
   function cf(){let f=document.getElementById('fq').value;fetch('/frequency?freq='+f).then(()=>{us();document.getElementById('log').innerHTML+='> Frequency set to '+f+' MHz<br>';document.getElementById('log').scrollTop=9999;})}
   function ts(){fetch('/stealth',{method:'POST'}).then(()=>{us();document.getElementById('log').innerHTML+='> Stealth mode toggled.<br>';document.getElementById('log').scrollTop=9999;})}
   setInterval(us,1000);us();

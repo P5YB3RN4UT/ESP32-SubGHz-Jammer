@@ -32,6 +32,9 @@ WebServer server(80);
 float currentFrequency = 433.92;
 bool isJamming = false;
 
+// --- Stealth Mode Setting ---
+bool stealthMode = false; // When true, disables all RGB LED output
+
 // --- Button Debounce Variables ---
 bool lastButtonState = HIGH;
 bool currentButtonState = HIGH;
@@ -45,6 +48,7 @@ void handleRoot();
 void handleStatus();
 void handleToggle();
 void handleFrequency();
+void handleStealth();
 void updateLED();
 
 // --- Compact Retro Terminal HTML UI ---
@@ -72,6 +76,7 @@ const char* htmlPage = R"rawliteral(
     <option value="915.00">915 MHz</option>
   </select>
   <button id="btn" onclick="tj()">[ ACTIVATE ]</button>
+  <button id="stlBtn" onclick="ts()">[ STEALTH: OFF ]</button>
   <div class="log" id="log">> System initialized...<br>> Waiting for input...<br></div>
 </div>
 <script>
@@ -79,11 +84,12 @@ const char* htmlPage = R"rawliteral(
     document.getElementById('st').innerText=d.j?'ACTIVE':'STANDBY';
     document.getElementById('st').className=d.j?'on':'off';
     document.getElementById('btn').innerText=d.j?'[ DEACTIVATE ]':'[ ACTIVATE ]';
-    // d.f is now safely a string like "315.00", ensuring exact match with option values
     document.getElementById('fq').value = d.f;
+    document.getElementById('stlBtn').innerText = d.s ? '[ STEALTH: ON ]' : '[ STEALTH: OFF ]';
   })}
   function tj(){fetch('/toggle',{method:'POST'}).then(()=>{us();let j=document.getElementById('st').innerText==='ACTIVE';document.getElementById('log').innerHTML+='> '+(j?'Jamming initiated.':'Jamming terminated.')+'<br>';document.getElementById('log').scrollTop=9999;})}
   function cf(){let f=document.getElementById('fq').value;fetch('/frequency?freq='+f).then(()=>{us();document.getElementById('log').innerHTML+='> Frequency set to '+f+' MHz<br>';document.getElementById('log').scrollTop=9999;})}
+  function ts(){fetch('/stealth',{method:'POST'}).then(()=>{us();document.getElementById('log').innerHTML+='> Stealth mode toggled.<br>';document.getElementById('log').scrollTop=9999;})}
   setInterval(us,1000);us();
 </script></body></html>
 )rawliteral";
@@ -118,6 +124,7 @@ void setup() {
   server.on("/status", handleStatus);
   server.on("/toggle", HTTP_POST, handleToggle);
   server.on("/frequency", HTTP_GET, handleFrequency);
+  server.on("/stealth", HTTP_POST, handleStealth); // NEW: Stealth mode toggle route
   server.begin();
   Serial.println("HTTP Server Started");
 }
@@ -157,10 +164,11 @@ void handleRoot() {
 }
 
 void handleStatus() {
-  // UPDATED: Format frequency to exactly 2 decimal places as a JSON string.
-  // This prevents JS from parsing "315.00" as the integer 315, which broke the dropdown match.
   String fStr = String(currentFrequency, 2);
-  String json = "{\"j\":" + String(isJamming ? "true" : "false") + ",\"f\":\"" + fStr + "\"}";
+  // Added "s" (stealth) to the JSON response
+  String json = "{\"j\":" + String(isJamming ? "true" : "false") + 
+                ",\"f\":\"" + fStr + "\"," + 
+                "\"s\":" + String(stealthMode ? "true" : "false") + "}";
   server.send(200, "application/json", json);
 }
 
@@ -201,6 +209,14 @@ void handleFrequency() {
   server.send(400, "text/plain", "Invalid Frequency");
 }
 
+void handleStealth() {
+  stealthMode = !stealthMode;
+  updateLED(); // Apply LED state change immediately
+  Serial.print("[WEB] Stealth Mode: ");
+  Serial.println(stealthMode ? "ON" : "OFF");
+  server.send(200, "text/plain", "OK");
+}
+
 // --- CC1101 Control Functions ---
 void startJamming() {
   Serial.println("Starting jammer...");
@@ -223,6 +239,14 @@ void stopJamming() {
 
 // --- RGB LED Control Function ---
 void updateLED() {
+  // NEW: If stealth mode is active, force all LEDs off and exit early
+  if (stealthMode) {
+    digitalWrite(LED_R, LED_OFF);
+    digitalWrite(LED_G, LED_OFF);
+    digitalWrite(LED_B, LED_OFF);
+    return;
+  }
+
   int r = 0, g = 0, b = 0;
   
   // Determine color based on selected frequency

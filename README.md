@@ -32,6 +32,6 @@ This project includes source code for a Sub-GHz Jammer with the following requir
 
 - <b>Stealth Mode</b>
 
-  <i>Remotely control the RGB LED feedback to be active or inactive via the Web UI.
+  <i>Remotely control the RGB LED feedback to be active or inactive via the Web UI.</i>
 
 ## Note: ReadMe Description Still Pending

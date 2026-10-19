@@ -57,7 +57,7 @@ Additional:
 
 ## Pinout
 
-| 18650 Battery | TC/TP4056 Module | On/Off Switch | ESP32-WROOM-32 | Push Button | RESISTOR | CC1101 Module | RGB LED |
+| 18650 Battery | TC/TP4056 Module | On/Off Switch | ESP32-WROOM-32 | Push Button | Resistor | CC1101 Module | RGB LED |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | + | B + |  |  |  |  |  |  |
 | -	| B - |  |  |  |  |  |  |

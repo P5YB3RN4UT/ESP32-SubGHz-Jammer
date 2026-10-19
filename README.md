@@ -57,7 +57,7 @@ Additional:
 
 ## Pinout
 
-| 18650 Battery | TC/TP4056 Charging Module | On/Off Switch | ESP32-WROOM-32 | Push Button | RESISTOR | CC1101 Module | RGB LED |
+| 18650 Battery | TC/TP4056 Module | On/Off Switch | ESP32-WROOM-32 | Push Button | RESISTOR | CC1101 Module | RGB LED |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | + | B + |  |  |  |  |  |  |
 | -	| B - |  |  |  |  |  |  |
@@ -76,3 +76,18 @@ Additional:
 | 	|  |  | GPIO 23 |  |  | MOSI |  |
 | 	|  |  | GPIO 05 |  |  | CSN |  |
 | 	|  |  | GPIO 25 |  |  | GDO0 |  |
+
+
+## Operation
+
+1. Switch on the device.
+2. Default frequency is 433 MHz.
+3. Press push button to activate jammer (the RGB LED will start blinking to indicate device is in active jamming mode).
+4. To access Web UI connect to WiFi access point "**㋡**" with the password "**p5yb3rn4ut**".
+5. Open a browser at the URL **http://192.168.4.1**.
+6. Choose one of the four target frequency presets.
+   
+   *Note: The RGB LED will change colour (Red=315 MHz, Green=433 MHz, Blue=868 MHz, Purple=915 MHz).*
+
+7. Select "**ACTIVATE**" to start jamming on selected preset.
+8. Select "**DEACTIVATE**" to stop jamming.

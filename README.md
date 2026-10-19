@@ -34,4 +34,45 @@ This project includes source code for a Sub-GHz Jammer with the following requir
 
   <i>Remotely control the RGB LED feedback to be active or inactive via the Web UI.</i>
 
-## Note: ReadMe Description Still Pending
+
+## Hardware
+
+Required:
+1. ESP32-WROOM-32
+2. Programming Cable
+3. 18650 Battery
+4. 18650 Battery Holder
+5. CC1101 Module
+6. TC4056/TP4056 Charging Module
+7. On/Off Switch
+8. Tactile Push Button
+9. RGB LED
+10. 3 x 220Ω Resistors
+11. Project Box
+
+Additional:
+1. Perfboard
+2. Pin Headers
+
+
+## Pinout
+
+| 18650 Battery | TC/TP4056 Charging Module | On/Off Switch | ESP32-WROOM-32 | Push Button | RESISTOR | CC1101 Module | RGB LED |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| + | B + |  |  |  |  |  |  |
+| -	| B - |  |  |  |  |  |  |
+| 	| OUT + | °/° | 5V |  |  |  |  |
+| 	| OUT - |  | GND |  |  |  |  |
+| 	|  |  | GPIO 33 | PIN 1 |  |  |  |
+| 	|  |  | GND | PIN 2 |  |  |  |
+| 	|  |  | GND |  |  |  | CATHODE |
+| 	|  |  | GPIO 04 |   | 220Ω |  | RED |
+| 	|  |  | GPIO 16 |   | 220Ω |  | GREEN |
+| 	|  |  | GPIO 17 |   | 220Ω |  | BLUE |
+| 	|  |  | 3V3 |   |  | VCC |  |
+| 	|  |  | GND |   |  | GND |  |
+| 	|  |  | GPIO 18 |  |  | SCK |  |
+| 	|  |  | GPIO 19 |  |  | MISO |  |
+| 	|  |  | GPIO 23 |  |  | MOSI |  |
+| 	|  |  | GPIO 05 |  |  | CSN |  |
+| 	|  |  | GPIO 25 |  |  | GDO0 |  |

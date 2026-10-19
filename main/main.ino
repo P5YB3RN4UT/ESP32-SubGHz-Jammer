@@ -80,17 +80,53 @@ const char* htmlPage = R"rawliteral(
   <div class="log" id="log">> System initialized...<br>> Waiting for input...<br></div>
 </div>
 <script>
-  function us(){fetch('/status').then(r=>r.json()).then(d=>{
-    document.getElementById('st').innerText=d.j?'ACTIVE':'STANDBY';
-    document.getElementById('st').className=d.j?'on':'off';
-    document.getElementById('btn').innerText=d.j?'[ DEACTIVATE ]':'[ ACTIVATE ]';
-    document.getElementById('fq').value = d.f;
-    document.getElementById('stlBtn').innerText = d.s ? '[ STEALTH: ON ]' : '[ STEALTH: OFF ]';
-  })}
-  function tj(){fetch('/toggle',{method:'POST'}).then(()=>{us();let j=document.getElementById('st').innerText==='ACTIVE';document.getElementById('log').innerHTML+='> '+(j?'Jamming terminated.':'Jamming initiated.')+'<br>';document.getElementById('log').scrollTop=9999;})}
-  function cf(){let f=document.getElementById('fq').value;fetch('/frequency?freq='+f).then(()=>{us();document.getElementById('log').innerHTML+='> Frequency set to '+f+' MHz<br>';document.getElementById('log').scrollTop=9999;})}
-  function ts(){fetch('/stealth',{method:'POST'}).then(()=>{us();document.getElementById('log').innerHTML+='> Stealth mode toggled.<br>';document.getElementById('log').scrollTop=9999;})}
-  setInterval(us,1000);us();
+  let lastKnownJammingState = null;
+
+  function us(){
+    fetch('/status').then(r=>r.json()).then(d=>{
+      let currentJammingState = d.j;
+      
+      // Update UI elements
+      document.getElementById('st').innerText = currentJammingState ? 'ACTIVE' : 'STANDBY';
+      document.getElementById('st').className = currentJammingState ? 'on' : 'off';
+      document.getElementById('btn').innerText = currentJammingState ? '[ DEACTIVATE ]' : '[ ACTIVATE ]';
+      document.getElementById('fq').value = d.f;
+      document.getElementById('stlBtn').innerText = d.s ? '[ STEALTH: ON ]' : '[ STEALTH: OFF ]';
+      
+      // Detect state change (works for BOTH physical button and web UI)
+      if (lastKnownJammingState !== null && lastKnownJammingState !== currentJammingState) {
+        let msg = currentJammingState ? '> Jamming initiated.<br>' : '> Jamming terminated.<br>';
+        document.getElementById('log').innerHTML += msg;
+        document.getElementById('log').scrollTop = 9999;
+      }
+      
+      lastKnownJammingState = currentJammingState;
+    })
+  }
+
+  function tj(){
+    fetch('/toggle',{method:'POST'}).then(()=>{us();})
+  }
+  
+  function cf(){
+    let f=document.getElementById('fq').value;
+    fetch('/frequency?freq='+f).then(()=>{
+      us();
+      document.getElementById('log').innerHTML+='> Frequency set to '+f+' MHz<br>';
+      document.getElementById('log').scrollTop=9999;
+    })
+  }
+  
+  function ts(){
+    fetch('/stealth',{method:'POST'}).then(()=>{
+      us();
+      document.getElementById('log').innerHTML+='> Stealth mode toggled.<br>';
+      document.getElementById('log').scrollTop=9999;
+    })
+  }
+  
+  setInterval(us,1000);
+  us();
 </script></body></html>
 )rawliteral";
 
@@ -124,7 +160,7 @@ void setup() {
   server.on("/status", handleStatus);
   server.on("/toggle", HTTP_POST, handleToggle);
   server.on("/frequency", HTTP_GET, handleFrequency);
-  server.on("/stealth", HTTP_POST, handleStealth); // NEW: Stealth mode toggle route
+  server.on("/stealth", HTTP_POST, handleStealth);
   server.begin();
   Serial.println("HTTP Server Started");
 }
@@ -165,7 +201,6 @@ void handleRoot() {
 
 void handleStatus() {
   String fStr = String(currentFrequency, 2);
-  // Added "s" (stealth) to the JSON response
   String json = "{\"j\":" + String(isJamming ? "true" : "false") + 
                 ",\"f\":\"" + fStr + "\"," + 
                 "\"s\":" + String(stealthMode ? "true" : "false") + "}";
@@ -188,7 +223,6 @@ void handleToggle() {
 void handleFrequency() {
   if (server.hasArg("freq")) {
     float newFreq = server.arg("freq").toFloat();
-    // Using range checking for float comparison safety
     if ((newFreq >= 314.9 && newFreq <= 315.1) ||
         (newFreq >= 433.8 && newFreq <= 434.0) ||
         (newFreq >= 867.9 && newFreq <= 868.1) ||
@@ -239,7 +273,6 @@ void stopJamming() {
 
 // --- RGB LED Control Function ---
 void updateLED() {
-  // NEW: If stealth mode is active, force all LEDs off and exit early
   if (stealthMode) {
     digitalWrite(LED_R, LED_OFF);
     digitalWrite(LED_G, LED_OFF);
@@ -249,7 +282,6 @@ void updateLED() {
 
   int r = 0, g = 0, b = 0;
   
-  // Determine color based on selected frequency
   if (currentFrequency >= 314.9 && currentFrequency <= 315.1) {
     r = 1;       // Red
   } else if (currentFrequency >= 433.8 && currentFrequency <= 434.0) {
@@ -261,7 +293,6 @@ void updateLED() {
   }
 
   if (isJamming) {
-    // Blink the color when jamming (500ms interval)
     if ((millis() / 500) % 2 == 0) {
       digitalWrite(LED_R, r ? LED_ON : LED_OFF);
       digitalWrite(LED_G, g ? LED_ON : LED_OFF);
@@ -272,7 +303,6 @@ void updateLED() {
       digitalWrite(LED_B, LED_OFF);
     }
   } else {
-    // Solid color when in standby
     digitalWrite(LED_R, r ? LED_ON : LED_OFF);
     digitalWrite(LED_G, g ? LED_ON : LED_OFF);
     digitalWrite(LED_B, b ? LED_ON : LED_OFF);

@@ -110,8 +110,10 @@ Flashing the ESP32:
    
    *Note: The RGB LED will change colour (Red=315 MHz, Green=433 MHz, Blue=868 MHz, Purple=915 MHz).*
 
-7. Select "**ACTIVATE**" to start jamming on selected preset.
-8. Select "**DEACTIVATE**" to stop jamming.
+   *Note: Be sure to switch out the antenna with one that is suitable for the chosen frequency.*
+
+8. Select "**ACTIVATE**" to start jamming on selected preset.
+9. Select "**DEACTIVATE**" to stop jamming.
 
 
 ## Photos
